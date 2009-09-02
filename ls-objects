@@ -2,18 +2,22 @@
 
 . /opt/local/libexec/git-core/git-sh-setup
 
-for object in $GIT_DIR/objects/[0-9a-f]*/*
-do
-  sha=$(echo $object | sed -e s@$GIT_DIR/objects/@@ | cut -c 1-2,4-)
+show()
+{
+  sha=$1
   type=$(git cat-file -t $sha)
   echo $sha $type
+}
+
+for object in $GIT_DIR/objects/[0-9a-f]*/*
+do
+  show $(echo $object | sed -e s@$GIT_DIR/objects/@@ | cut -c 1-2,4-)
 done
 
-for pack in $GIT_DIR/objects/pack/*.idx
+for pack in `find $GIT_DIR/objects/pack/ -name '*.idx'`
 do
   for sha in `git show-index < $pack | cut -f 2 -d ' '`
   do
-    type=$(git cat-file -t $sha)
-    echo $sha $type
+    show $sha
   done
 done
