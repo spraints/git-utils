@@ -1,13 +1,19 @@
 #!/bin/sh
 
-for object in .git/objects/[0-9a-f]*/*
+. /opt/local/libexec/git-core/git-sh-setup
+
+for object in $GIT_DIR/objects/[0-9a-f]*/*
 do
-  sha=$(echo $object | cut -c 14-15,17-)
+  sha=$(echo $object | sed -e s@$GIT_DIR/objects/@@ | cut -c 1-2,4-)
   type=$(git cat-file -t $sha)
   echo $sha $type
 done
 
-for pack in .git/objects/pack/*.idx
+for pack in $GIT_DIR/objects/pack/*.idx
 do
-  echo $pack
+  for sha in `git show-index < $pack | cut -f 2 -d ' '`
+  do
+    type=$(git cat-file -t $sha)
+    echo $sha $type
+  done
 done
