@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. /opt/local/libexec/git-core/git-sh-setup
+. git-sh-setup
 
 show()
 {
