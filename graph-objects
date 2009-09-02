@@ -1,0 +1,91 @@
+#!/bin/sh
+
+. /opt/local/libexec/git-core/git-sh-setup
+util_dir=$(dirname $0)
+if [ $util_dir = '' ]
+then
+  util_dir=.
+fi
+
+indent='  '
+
+make_node()
+{
+  sha=$1
+  type=$2
+  shape=$3
+  short_sha=$(echo $sha | cut -c 1-10)
+  echo "$indent" \"$sha\" [ label=\"$type $short_sha...\", shape=$shape ] \;
+}
+
+make_edge()
+{
+  source=$1
+  destination=$2
+  label=$3
+  if [ -n "$label" ] ; then label=label=\"$label\" ; fi
+  echo "$indent" \"$source\" '->' \"$destination\" [ $label ] \;
+}
+
+graph_blob()
+{
+  make_node $1 blob ellipse
+}
+
+graph_commit_parts()
+{
+  commit=$1
+  while read type sha
+  do
+    if [ "$type" = 'parent' -o "$type" = 'tree' ]
+    then
+      make_edge $commit $sha $type
+    fi
+  done
+}
+
+graph_commit()
+{
+  sha=$1
+  make_node $1 commit box3d
+  git cat-file commit $sha | graph_commit_parts $sha
+}
+
+graph_tree_parts()
+{
+  tree=$1
+  while read mode type sha name
+  do
+    make_edge $tree $sha $name
+  done
+}
+
+graph_tree()
+{
+  sha=$1
+  make_node $sha tree box
+  git ls-tree $sha | graph_tree_parts $sha
+}
+
+graph_refs()
+{
+  while read sha name
+  do
+    echo "$indent" \"$name\" [ shape=plaintext ] \;
+    make_edge $name $sha
+  done
+}
+
+make_edges()
+{
+  while read sha type
+  do
+    graph_$type $sha
+  done
+}
+
+echo digraph
+echo {
+$util_dir/ls-objects | make_edges
+git show-ref | graph_refs
+echo }
