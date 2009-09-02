@@ -1,0 +1,13 @@
+#!/bin/sh
+
+for object in .git/objects/[0-9a-f]*/*
+do
+  sha=$(echo $object | cut -c 14-15,17-)
+  type=$(git cat-file -t $sha)
+  echo $sha $type
+done
+
+for pack in .git/objects/pack/*.idx
+do
+  echo $pack
+done
