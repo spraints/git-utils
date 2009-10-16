@@ -9,14 +9,15 @@ show()
   echo $sha $type
 }
 
-for object in `find -E $GIT_DIR/objects -type f -regex '.*[0-9a-f]{2}/[0-9a-f]{38}'`
+find -E "$GIT_DIR/objects" -type f -regex '.*[0-9a-f]{2}/[0-9a-f]{38}' | while read object
 do
-  show $(echo $object | sed -e s@$GIT_DIR/objects/@@ | cut -c 1-2,4-)
+  dir=$(dirname "$object")
+  show $(basename "$dir")$(basename "$object")
 done
 
-for pack in `find $GIT_DIR/objects/pack/ -name '*.idx'`
+find "$GIT_DIR/objects/pack/" -name '*.idx' | while read pack
 do
-  for sha in `git show-index < $pack | cut -f 2 -d ' '`
+  git show-index < "$pack" | cut -f 2 -d ' ' | while read sha
   do
     show $sha
   done
