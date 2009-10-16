@@ -9,8 +9,9 @@ make_node()
   sha=$1
   type=$2
   shape=$3
+  color=$4
   short_sha=$(echo $sha | cut -c 1-10)
-  echo "$indent" \"$sha\" [ label=\"$type $short_sha...\", shape=$shape ] \;
+  echo "$indent" \"$sha\" [ label=\"$type $short_sha...\", shape=$shape, color=$color ] \;
 }
 
 make_edge()
@@ -24,7 +25,7 @@ make_edge()
 
 graph_blob()
 {
-  make_node $1 blob ellipse
+  make_node $1 blob ellipse red
 }
 
 graph_commit_parts()
@@ -42,7 +43,7 @@ graph_commit_parts()
 graph_commit()
 {
   sha=$1
-  make_node $1 commit box3d
+  make_node $1 commit box3d green
   git cat-file commit $sha | graph_commit_parts $sha
 }
 
@@ -58,7 +59,7 @@ graph_tree_parts()
 graph_tree()
 {
   sha=$1
-  make_node $sha tree box
+  make_node $sha tree box blue
   git ls-tree $sha | graph_tree_parts $sha
 }
 
@@ -81,6 +82,9 @@ make_edges()
 
 echo digraph
 echo {
+echo   bgcolor = black ;
+echo   node [ color = white, fontcolor = white ] ;
+echo   edge [ color = white, fontcolor = white ] ;
 git ls-objects | make_edges
 git show-ref | graph_refs
 echo }
